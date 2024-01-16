@@ -15,21 +15,16 @@ app.use(express.json())
 app.use(cors())
 
 app.post('/register', (req, res) => {
-  const email = req.body.email
-  const password = req.body.password
-  const type = req.body.type
-  const school = req.body.school
-  const name = req.body.name
-  const surname = req.body.surname
+  const { email, password, type, school, name, surname } = req.body
 
   db.query(
     'SELECT * FROM usuarios WHERE email = ?',
-    [email, password],
+    [email, password, type, school, name, surname],
     (err, result) => {
       if (err) {
         res.send(err)
       }
-      if (result.length > 0) {
+      if (result.length === 0) {
         db.query(
           'INSERT INTO usuarios (email, password, type, school, name, surname) VALUES (?, ?, ?, ?, ?, ?)',
           [email, password, type, school, name, surname],
