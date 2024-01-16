@@ -16,8 +16,11 @@ import { Input } from '@/components/ui/input'
 import Link from 'next/link'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
+import { useRouter } from 'next/navigation'
 
 export default function LoginPage() {
+  const router = useRouter()
+
   const formSchema = z.object({
     username: z.string().min(2, {
       message: 'Username must be at least 2 characters.'
@@ -121,7 +124,7 @@ export default function LoginPage() {
               )}
             />
             <div className="flex flex-col gap-4 items-center w-full">
-              <Button type="submit" variant={'default'}>
+              <Button type="submit" variant={'default'} onClick={() => router.push('/dashboard')}>
                 Iniciar aventura
               </Button>
               <Link href="#" className="underline text-white text-sm">
