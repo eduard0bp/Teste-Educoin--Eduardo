@@ -64,7 +64,7 @@ export const UserCard = ({
             onClick={() => {
               setIsEdit(true)
               setOpenUserInfoModal(true)
-              setUserId(user.id)
+              setUserId(user)
             }}
           >
             <Edit />

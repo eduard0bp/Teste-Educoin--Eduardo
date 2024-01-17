@@ -1,17 +1,18 @@
 'use client'
 import { User } from '@/app/interfaces/user'
 import { Button } from '@/components/ui/button'
+import { Modal } from '@/components/ui/modal/modal'
+import { ModalContext } from '@/components/ui/modal/modal.context'
 import { UserCard } from '@/components/ui/userCard'
-import { UserInfoModal } from '@/components/ui/userInfoModal'
 import { Cross } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import useSWR from 'swr'
 
 const fetcher = (url: string) => fetch(url).then(res => res.json())
 
 export default function DashboardPage() {
-  const [openUserInfoModal, setOpenUserInfoModal] = useState(false)
+  const { setOpen } = useContext(ModalContext)
   const [isEdit, setIsEdit] = useState(false)
   const [userId, setUserId] = useState(0)
 
@@ -44,7 +45,7 @@ export default function DashboardPage() {
             type="button"
             className="bg-[#a05bb2] text-white hover:bg-[#a05bb2]/50 hover:text-white gap-2 max-w-[200px]"
             variant={'default'}
-            onClick={() => setOpenUserInfoModal(true)}
+            onClick={() => setOpen(true)}
           >
             Cadastrar usuário
             <Cross />
@@ -76,7 +77,7 @@ export default function DashboardPage() {
                   storedUser={storedUser}
                   user={user}
                   setIsEdit={setIsEdit}
-                  setOpenUserInfoModal={setOpenUserInfoModal}
+                  setOpenUserInfoModal={setOpen}
                   setUserId={setUserId}
                 />
               ))
@@ -93,15 +94,13 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {openUserInfoModal && (
-        <UserInfoModal
-          userId={userId}
-          isEdit={isEdit}
-          setOpenUserInfoModal={setOpenUserInfoModal}
-          setUserId={setUserId}
-          setIsEdit={setIsEdit}
-        />
-      )}
+      <Modal
+        user={userId}
+        isEdit={isEdit}
+        setUserId={setUserId}
+        setIsEdit={setIsEdit}
+        mutate={mutate}
+      />
     </div>
   )
 }

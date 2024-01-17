@@ -3,6 +3,8 @@
 import React, { useState, useEffect, ReactNode } from 'react'
 import Sidebar, { SidebarItem } from '@/components/ui/sidebar'
 import { Gauge } from 'lucide-react'
+import { ModalProvider } from '@/components/ui/modal/modal-provider'
+import { Modal } from '@/components/ui/modal/modal'
 
 interface DashboardLayoutProps {
   children: ReactNode
@@ -22,7 +24,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         <Sidebar name={user.name} email={user.email}>
           <SidebarItem icon={<Gauge />} text="Dashboard" active />
         </Sidebar>
-        {children}
+        <ModalProvider>
+          {children}
+        </ModalProvider>
       </main>
     </>
   )
