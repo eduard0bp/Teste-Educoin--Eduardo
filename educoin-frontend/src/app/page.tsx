@@ -17,30 +17,70 @@ import Link from 'next/link'
 import Image from 'next/image'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function LoginPage() {
   const router = useRouter()
+  const storedUser =
+    typeof window !== 'undefined'
+      ? JSON.parse(localStorage.getItem('user') || '{}')
+      : null
 
   const formSchema = z.object({
-    username: z.string().min(2, {
-      message: 'Username must be at least 2 characters.'
+    school: z.string().min(2, {
+      message: 'Instituição Escolar deve ter pelo menos 2 caracteres.'
     }),
     email: z.string().min(2, {
-      message: 'Email must be at least 2 characters.'
+      message: 'Digite um e-mail válido.'
     }),
     password: z.string().min(2, {
-      message: 'Password must be at least 2 characters.'
+      message: 'Senha deve ter pelo menos 2 caracteres.'
     })
   })
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      username: '',
+      school: '',
       email: '',
       password: ''
     }
   })
+
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    try {
+      const response = await fetch('http://localhost:3001/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          school: values.school,
+          email: values.email,
+          password: values.password
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'E-mail ou senha inválidos!')
+      }
+
+      const data = await response.json()
+      localStorage.setItem('user', JSON.stringify(data.user))
+
+      router.push('/dashboard')
+      toast.success('Login realizado com sucesso!')
+    } catch (error) {
+      toast.error('Erro ao realizar login!')
+    }
+  }
+
+  useEffect(() => {
+    if (Object.keys(storedUser).length !== 0) {
+      router.push('/dashboard')
+    }
+  }, [router, storedUser])
 
   return (
     <div className="flex h-screen w-screen items-center justify-center bg-black bg-[url('/background.svg')] bg-no-repeat bg-cover relative">
@@ -55,7 +95,7 @@ export default function LoginPage() {
       >
         <Image src="/arrow-left.svg" alt="" width={36} height={36} />
       </Button>
-      <div className=" relative h-[532px] w-[437px] flex flex-col rounded-3xl border-4 bg-white/50 backdrop-blur-sm border-white px-10 pt-14 pb-7 items-center justify-center">
+      <div className=" relative h-fit w-[437px] flex flex-col rounded-3xl border-4 bg-white/50 backdrop-blur-sm border-white px-10 pt-14 pb-7 items-center justify-center">
         <Image
           src="/achievements.svg"
           alt=""
@@ -64,10 +104,13 @@ export default function LoginPage() {
           className="absolute top-1 left-1/2 transform -translate-x-1/2 -translate-y-1/2"
         />
         <Form {...form}>
-          <form onSubmit={() => {}} className="space-y-4 w-full ">
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="space-y-4 w-full "
+          >
             <FormField
               control={form.control}
-              name="username"
+              name="school"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Instituição escolar</FormLabel>
@@ -92,10 +135,11 @@ export default function LoginPage() {
                     <Input
                       className="border-2 border-[#6D048C]"
                       placeholder="Digite seu e-mail"
+                      type="email"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription className="text-[10px]">
+                  <FormDescription className="text-[10px] font-bold">
                     Ex: nomesobrenome@escola.com.br
                   </FormDescription>
                   <FormMessage />
@@ -112,10 +156,11 @@ export default function LoginPage() {
                     <Input
                       className="border-2 border-[#6D048C]"
                       placeholder="Digite sua senha"
+                      type="password"
                       {...field}
                     />
                   </FormControl>
-                  <FormDescription className="text-[10px]">
+                  <FormDescription className="text-[10px] font-bold">
                     Sua senha é composta pelo nome da sua mãe + sua data de
                     nascimento
                   </FormDescription>
@@ -124,10 +169,16 @@ export default function LoginPage() {
               )}
             />
             <div className="flex flex-col gap-4 items-center w-full">
-              <Button type="submit" variant={'default'} onClick={() => router.push('/dashboard')}>
+              <Button type="submit" variant={'default'}>
                 Iniciar aventura
               </Button>
-              <Link href="#" className="underline text-white text-sm">
+              <Link
+                href="#"
+                className="underline text-white text-sm"
+                onClick={() => {
+                  toast.error('Em desenvolvimento...')
+                }}
+              >
                 Esqueci minha senha
               </Link>
               <Image

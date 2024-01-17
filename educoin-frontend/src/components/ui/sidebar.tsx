@@ -1,12 +1,34 @@
 'use client'
-import { MoreVertical, ChevronLast, ChevronFirst, User } from 'lucide-react'
-import { useContext, createContext, useState } from 'react'
+import {
+  MoreVertical,
+  ChevronLast,
+  ChevronFirst,
+  User,
+  LogOut
+} from 'lucide-react'
+import { useContext, createContext, useState, ReactNode } from 'react'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
+import toast from 'react-hot-toast'
 
 const SidebarContext = createContext({ expanded: true })
 
-export default function Sidebar({ children, name, email }: any) {
+interface SidebarProps {
+  name: string
+  email: string
+  children: ReactNode
+}
+
+export default function Sidebar({ children, name, email }: SidebarProps) {
+  const router = useRouter()
   const [expanded, setExpanded] = useState(true)
+
+  const handleLogout = async () => {
+    localStorage.removeItem('user')
+
+    await router.push('/')
+    toast.success('Logout realizado com sucesso!')
+  }
 
   return (
     <aside className="h-screen">
@@ -45,7 +67,11 @@ export default function Sidebar({ children, name, email }: any) {
               <h4 className="font-semibold">{name}</h4>
               <span className="text-xs text-gray-600">{email}</span>
             </div>
-            <MoreVertical size={20} />
+            <LogOut
+              size={20}
+              className="cursor-pointer"
+              onClick={() => handleLogout()}
+            />
           </div>
         </div>
       </nav>
@@ -53,7 +79,14 @@ export default function Sidebar({ children, name, email }: any) {
   )
 }
 
-export function SidebarItem({ icon, text, active, alert }: any) {
+interface SidebarItemProps {
+  icon: ReactNode
+  text: string
+  active: boolean
+  alert?: boolean
+}
+
+export function SidebarItem({ icon, text, active, alert }: SidebarItemProps) {
   const { expanded } = useContext(SidebarContext)
 
   return (

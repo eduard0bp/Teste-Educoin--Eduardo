@@ -43,19 +43,29 @@ app.post('/register', (req, res) => {
 })
 
 app.post('/login', (req, res) => {
-  const { email, password } = req.body
+  const { email, password, school } = req.body
 
   db.query(
-    'SELECT * FROM usuarios WHERE email = ? AND password = ?',
-    [email, password],
+    'SELECT id, type, name, email FROM usuarios WHERE email = ? AND password = ? AND school = ?',
+    [email, password, school],
     (err, result) => {
       if (err) {
-        res.send(err)
+        res.status(500).send({ message: 'Erro no servidor!' })
+        return
       }
       if (result.length > 0) {
-        res.send({ message: 'Usuário logado com sucesso!' })
+        const user = result[0]
+        res.send({
+          message: 'Usuário logado com sucesso!',
+          user: {
+            id: user.id,
+            type: user.type,
+            name: user.name,
+            email: user.email
+          }
+        })
       } else {
-        res.send({ message: 'Usuário ou senha inválidos!' })
+        res.status(401).send({ message: 'Usuário ou senha inválidos!' })
       }
     }
   )
@@ -99,6 +109,20 @@ app.put('/users/:id', (req, res) => {
       })
     }
   )
+})
+
+app.get('/users/:id', (req, res) => {
+  const id = req.params.id
+
+  db.query('SELECT * FROM usuarios WHERE id = ?', [id], (err, result) => {
+    if (err) {
+      res.status(500).send({ message: 'Erro ao buscar usuário!' })
+    } else if (result.length > 0) {
+      res.send(result[0])
+    } else {
+      res.status(404).send({ message: 'Usuário não encontrado!' })
+    }
+  })
 })
 
 app.listen(3001, () => console.log('Server running on port 3001'))
